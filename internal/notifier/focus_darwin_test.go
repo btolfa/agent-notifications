@@ -18,6 +18,15 @@ func TestParseLsappinfoBundleID(t *testing.T) {
 		{"trailing newline", "\"LSBundleID\"=\"com.microsoft.VSCode\"\n", "com.microsoft.VSCode", true},
 		{"no equals", "com.apple.Terminal", "", false},
 		{"empty value", `"LSBundleID"=""`, "", false},
+		{
+			"multi-line block does not swallow later fields",
+			"[ NULL ]  ASN:0x0-0x11011: (in front) \n" +
+				"    bundleID=\"com.mitchellh.ghostty\"\n" +
+				"    bundle path=[ NULL ] \n" +
+				"    executable path=[ NULL ] \n",
+			"com.mitchellh.ghostty",
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

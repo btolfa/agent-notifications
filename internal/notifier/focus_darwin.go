@@ -117,17 +117,25 @@ func runLsappinfo(args ...string) ([]byte, error) {
 	return exec.CommandContext(ctx, "lsappinfo", args...).Output()
 }
 
-// parseLsappinfoBundleID extracts the bundle ID from `lsappinfo info -only bundleid`
-// output, formatted as `"LSBundleID"="com.apple.Terminal"` (or `bundleID`). It
-// returns the value between the final pair of quotes.
+// parseLsappinfoBundleID extracts the bundle ID from `lsappinfo info -only
+// bundleid` output. Depending on the macOS version that is either a single
+// `"LSBundleID"="com.apple.Terminal"` line or a multi-line block whose first
+// quoted value is `bundleID="com.apple.Terminal"`; in both shapes the bundle ID
+// is the value between the first `="` and the next `"`. Parsing only that value
+// avoids swallowing the block's remaining lines (bundle path, executable path,
+// …). Later unquoted `key=[ NULL ]` fields are skipped because they are not
+// followed by a quote.
 func parseLsappinfoBundleID(out string) (string, bool) {
-	out = strings.TrimSpace(out)
-	eq := strings.Index(out, "=")
-	if eq < 0 {
+	start := strings.Index(out, "=\"")
+	if start < 0 {
 		return "", false
 	}
-	value := strings.TrimSpace(out[eq+1:])
-	value = strings.Trim(value, "\"")
+	rest := out[start+2:]
+	end := strings.IndexByte(rest, '"')
+	if end < 0 {
+		return "", false
+	}
+	value := rest[:end]
 	if value == "" {
 		return "", false
 	}
