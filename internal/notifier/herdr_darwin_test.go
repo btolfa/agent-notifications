@@ -255,6 +255,12 @@ func TestHerdrLiveHostDetection(t *testing.T) {
 	}
 	t.Logf("herdr pane %s focused=%v", hostHerdrPaneID, focused)
 
+	if front, ok := frontmostBundleID(); ok {
+		t.Logf("frontmost bundle: %s", front)
+	}
+	t.Logf("herdrTerminalHasFocus=%v", herdrTerminalHasFocus())
+	t.Logf("IsTerminalFocused=%v", IsTerminalFocused("live", "/some/project"))
+
 	script := buildFocusScript("com.apple.Terminal", "/some/project")
 	t.Logf("herdr click script: %s", script)
 	if !strings.Contains(script, "agent focus '"+hostHerdrPaneID+"'") {
