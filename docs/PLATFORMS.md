@@ -28,6 +28,7 @@ Clicking a notification activates your terminal window. Auto-detects terminal an
 | Terminal | Focus method |
 |----------|-------------|
 | Ghostty | Exact tab focus via Ghostty AppleScript, with AXDocument fallback |
+| Herdr | Exact pane focus via `herdr agent focus`, after raising the terminal hosting the Herdr client |
 | VS Code / Insiders / Cursor | AXTitle (focus-window subcommand) |
 | iTerm2 | Exact tab/pane targeting via iTerm2 Python API when available, otherwise app-level iTerm activation |
 | Warp | Exact window/tab/pane via `WARP_FOCUS_URL` (`warp://session/<uuid>`), AXTitle fallback on older Warp |
@@ -46,7 +47,7 @@ Clicking a notification activates your terminal window. Auto-detects terminal an
 
 Linux focus methods (tried in order): Warp session URL (`xdg-open`), GNOME extension, GNOME Shell Eval, GNOME FocusApp, wlrctl (Sway/wlroots), kdotool (KDE), xdotool (X11).
 
-**Multiplexers:** tmux and kitty (macOS only), zellij and WezTerm (macOS & Linux) — click switches to the correct pane/tab. Linux zellij targets the exact pane; see the [Click-to-Focus Guide](CLICK_TO_FOCUS.md#multiplexers) for the full per-platform breakdown.
+**Multiplexers:** tmux and kitty (macOS only), zellij and WezTerm (macOS & Linux), and Herdr (macOS) — click switches to the correct pane/tab. Linux zellij targets the exact pane; see the [Click-to-Focus Guide](CLICK_TO_FOCUS.md#multiplexers) for the full per-platform breakdown.
 
 **iTerm2 note:** to open the exact iTerm2 tab or split pane, enable `iTerm2 > Settings > General > Magic > Enable Python API`. If you just toggled it, restart iTerm2 once. Without the Python API, the plugin falls back to app-level iTerm activation instead of exact tab targeting.
 

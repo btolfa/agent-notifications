@@ -11,12 +11,30 @@ import (
 
 var hostWarpFocusURL string
 
+var (
+	hostHerdrEnv        string
+	hostHerdrPaneID     string
+	hostHerdrBinPath    string
+	hostHerdrSocketPath string
+)
+
 func TestMain(m *testing.M) {
 	// Host shells inside Warp export WARP_FOCUS_URL; generic click-to-focus
 	// tests must not inherit it or they assert the wrong execute path.
 	hostWarpFocusURL = os.Getenv(warpfocus.FocusURLEnv)
 	_ = os.Unsetenv(warpfocus.FocusURLEnv)
 	_ = os.Unsetenv(warpfocus.SessionUUIDEnv)
+	// The test runner may itself run inside a Herdr pane; capture its host
+	// markers for the live test, then clear them so focus/click tests stay
+	// deterministic.
+	hostHerdrEnv = os.Getenv(herdrEnvVar)
+	hostHerdrPaneID = os.Getenv(herdrPaneIDEnv)
+	hostHerdrBinPath = os.Getenv(herdrBinPathEnv)
+	hostHerdrSocketPath = os.Getenv(herdrSocketPathEnv)
+	_ = os.Unsetenv(herdrEnvVar)
+	_ = os.Unsetenv(herdrPaneIDEnv)
+	_ = os.Unsetenv(herdrBinPathEnv)
+	_ = os.Unsetenv(herdrSocketPathEnv)
 	os.Exit(m.Run())
 }
 

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- macOS: click-to-focus and `notifyOnlyWhenUnfocused` work inside [Herdr](https://herdr.dev) panes. The plugin identifies the terminal hosting the Herdr client, checks whether the session's pane is the focused one, raises that terminal on click, then runs `herdr agent focus <pane>` to switch to the exact pane. No Accessibility or Screen Recording permission is needed.
+
 ## [1.45.18] - 2026-09-27
 
 ### Added

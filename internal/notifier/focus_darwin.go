@@ -31,6 +31,12 @@ var (
 // NSWorkspace.frontmostApplication approach: if the terminal app is frontmost
 // the user is looking at it.
 func terminalHasFocus(sessionID, cwd string) bool {
+	// Herdr panes carry their own focus state; the bundle-identity heuristics
+	// below cannot see the host terminal Herdr runs in.
+	if herdrEnvironmentActive() {
+		return herdrTerminalHasFocus()
+	}
+
 	front, ok := frontmostBundleID()
 	if !ok || front == "" {
 		return false

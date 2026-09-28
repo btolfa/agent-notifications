@@ -31,6 +31,7 @@ Quick reference before the platform-by-platform detail below. Precision levels: 
 | <img src="assets/terminals/powershell.svg" width="16" height="16" alt=""/> **conhost** (cmd.exe, PowerShell, legacy Git Bash) | — | — | ✅ Window | |
 | <img src="assets/terminals/conemu.png" width="16" height="16" alt=""/> **ConEmu** | — | — | ✅ Window | |
 | <img src="assets/terminals/tmux.svg" width="16" height="16" alt=""/> **tmux** | ✅ Pane/window | ❌ | ❌ | Also works inside iTerm2 `-CC` control mode via the Python API |
+| <img src="assets/terminals/generic-terminal.svg" width="16" height="16" alt=""/> **Herdr** | ✅ Pane (`herdr agent focus`) | ❌ | ❌ | Raises the terminal hosting the Herdr client, then focuses the originating pane |
 | <img src="assets/terminals/zellij.svg" width="16" height="16" alt=""/> **zellij** | ✅ Tab | ✅ Pane (exact, via `$ZELLIJ_PANE_ID`) | ❌ | See [Multiplexers](#multiplexers) for `zellijFocus` tuning |
 | Any other app | ✅ Window, via custom `terminalBundleId` | Fallback by name | ✅ Window | |
 
@@ -64,6 +65,7 @@ Auto-detects your terminal via `TERM_PROGRAM` / `__CFBundleIdentifier`. Uses `te
 | Terminal | Focus method |
 |----------|-------------|
 | Ghostty | Exact tab focus via Ghostty AppleScript, with AXDocument retry fallback |
+| Herdr | Exact pane focus via `herdr agent focus`, after raising the terminal hosting the Herdr client |
 | VS Code / Insiders / Cursor | AXTitle via focus-window subcommand |
 | iTerm2 | Exact tab/pane targeting via iTerm2 Python API when available, otherwise app-level iTerm activation |
 | Warp | Exact window/tab/pane via `WARP_FOCUS_URL` (`open warp://session/<uuid>`) when the hook ran inside Warp, with AXTitle `focus-window` fallback on older Warp. Cursor/VS Code launched from Warp keep editor focus. |
@@ -71,6 +73,16 @@ Auto-detects your terminal via `TERM_PROGRAM` / `__CFBundleIdentifier`. Uses `te
 | Any other (custom `terminalBundleId`) | AXTitle via focus-window subcommand |
 
 To find your terminal's bundle ID: `osascript -e 'id of app "YourTerminal"'`
+
+### Herdr
+
+[Herdr](https://herdr.dev) runs each agent in its own pane and does not forward the outer terminal's identity into panes, so `TERM_PROGRAM` / `__CFBundleIdentifier` cannot see the host terminal. When a hook runs inside a Herdr pane (`HERDR_ENV=1`), the plugin instead:
+
+- reads the pane id from `$HERDR_PANE_ID`;
+- finds the terminal hosting the Herdr client by reading the client process environment, and checks that it is the frontmost app;
+- asks Herdr whether that pane is its focused pane.
+
+Click-to-focus raises the host terminal, then runs `herdr agent focus <pane>`, so Herdr switches to the exact workspace, tab, and pane. Herdr's per-pane focus flag is server-wide and stays set while the terminal is in the background, which is why it is combined with the frontmost-app check: if the host terminal or the pane focus cannot be determined, the notification is shown. This needs no Accessibility or Screen Recording permission.
 
 ### Permissions
 

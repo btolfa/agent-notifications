@@ -24,7 +24,7 @@ Desktop notifications and sounds for **Claude Code and Codex CLI**. Know when a 
 ## Features
 
 - **Task and attention alerts:** completions, reviews, questions, plans, session limits and API errors for Claude; completions and permission requests for Codex, with opt-in subagent alerts. [Event details](docs/NOTIFICATION_TYPES.md)
-- **Click-to-focus:** return to the originating terminal or editor, with exact tab/pane targeting for supported integrations including Ghostty, iTerm2, Warp, tmux, kitty and WezTerm. [Supported terminals](docs/CLICK_TO_FOCUS.md)
+- **Click-to-focus:** return to the originating terminal or editor, with exact tab/pane targeting for supported integrations including Ghostty, Herdr, iTerm2, Warp, tmux, kitty and WezTerm. [Supported terminals](docs/CLICK_TO_FOCUS.md)
 - **Useful context:** project, git branch and session labels in notifications.
 - **Custom sounds:** built-in or custom MP3, WAV, FLAC, OGG and AIFF, with volume control, previews and audio output selection.
 - **Less noise:** focus-aware delivery, optional delay, duplicate-question suppression, filters by status, branch or folder, opt-in respect for the desktop's Do Not Disturb state, and opt-in muting while the display is asleep (macOS). [Do Not Disturb](docs/DO_NOT_DISTURB.md) · [Display sleep](docs/CONFIGURATION.md#mute-sound-while-display-is-asleep)
@@ -266,6 +266,7 @@ Clicking a notification activates your terminal window. Auto-detects terminal an
 | Terminal | Focus method |
 |----------|-------------|
 | Ghostty | Exact tab focus via Ghostty AppleScript, with AXDocument fallback |
+| Herdr | Exact pane focus via `herdr agent focus`, after raising the terminal hosting the Herdr client |
 | VS Code / Insiders / Cursor | AXTitle (focus-window subcommand) |
 | iTerm2 | Exact tab/pane targeting via iTerm2 Python API when available, otherwise app-level iTerm activation |
 | Warp | Exact window/tab/pane via `WARP_FOCUS_URL` (`warp://session/<uuid>`), AXTitle fallback on older Warp |
@@ -284,7 +285,7 @@ Clicking a notification activates your terminal window. Auto-detects terminal an
 
 Linux focus methods (tried in order): Warp session URL (`xdg-open`), GNOME extension, GNOME Shell Eval, GNOME FocusApp, wlrctl (Sway/wlroots), kdotool (KDE), xdotool (X11).
 
-**Multiplexers:** tmux and kitty (macOS only), zellij and WezTerm (macOS & Linux) — click switches to the correct pane/tab. Linux zellij targets the exact pane; see the [Click-to-Focus Guide](docs/CLICK_TO_FOCUS.md#multiplexers) for the full per-platform breakdown.
+**Multiplexers:** tmux and kitty (macOS only), zellij and WezTerm (macOS & Linux), and Herdr (macOS) — click switches to the correct pane/tab. Linux zellij targets the exact pane; see the [Click-to-Focus Guide](docs/CLICK_TO_FOCUS.md#multiplexers) for the full per-platform breakdown.
 
 **iTerm2 note:** to open the exact iTerm2 tab or split pane, enable `iTerm2 > Settings > General > Magic > Enable Python API`. If you just toggled it, restart iTerm2 once. Without the Python API, the plugin falls back to app-level iTerm activation instead of exact tab targeting.
 
@@ -464,7 +465,7 @@ They compose: with both set, the plugin waits, then notifies only if the termina
 
 Both apply to **desktop notifications only** - webhook delivery is never delayed or suppressed. Focus detection is best-effort and degrades safely by notifying when unsure:
 
-- macOS: Ghostty can be matched by exact terminal/session metadata; other terminal apps require the frontmost window title to match the project folder and existing Screen Recording access.
+- macOS: Ghostty can be matched by exact terminal/session metadata; other terminal apps require the frontmost window title to match the project folder and existing Screen Recording access. Inside Herdr the session's pane must be the focused one and the terminal hosting the Herdr client must be frontmost.
 - Linux: X11 sessions compare `$WINDOWID` to the active window. In JetBrains IDE terminals the active window must belong to the IDE process and its title must name the project (KDE Plasma: `kdotool`, X11: `xdotool`); an inherited `$WINDOWID` is ignored there. Other Wayland sessions and terminals without `$WINDOWID` are treated as unknown.
 - Windows: the foreground window must belong to the hook process ancestry and its title must contain the project folder. Ambiguous multi-window or multi-tab terminal hosts are treated as unknown.
 

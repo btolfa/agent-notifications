@@ -181,13 +181,17 @@ func (n *Notifier) sendWithTerminalNotifier(title, message, subtitle, sessionID 
 	}
 
 	var args []string
-	if muxArgs, muxName := detectMultiplexerArgs(title, message, bundleID, n.cfg); muxArgs != nil {
-		args = muxArgs
-		logging.Debug("%s detected, using multiplexer-specific -execute", muxName)
-	} else {
-		if muxName != "" {
+	// Herdr owns the terminal topology; a multiplexer nested around or under it
+	// must not capture the click target ahead of `herdr agent focus`.
+	if !herdrEnvironmentActive() {
+		if muxArgs, muxName := detectMultiplexerArgs(title, message, bundleID, n.cfg); muxArgs != nil {
+			args = muxArgs
+			logging.Debug("%s detected, using multiplexer-specific -execute", muxName)
+		} else if muxName != "" {
 			logging.Debug("%s detected but target capture failed, falling back to -activate", muxName)
 		}
+	}
+	if args == nil {
 		args = buildTerminalNotifierArgsWithOptions(title, message, bundleID, cwd, ghosttyTerminalID, clickToFocus)
 	}
 
@@ -343,6 +347,15 @@ func buildFocusScript(bundleID, cwd string) string {
 }
 
 func buildFocusScriptWithOptions(bundleID, cwd, ghosttyTerminalID string) string {
+	// Herdr hides the host terminal from panes, so none of the bundle-ID paths
+	// below can identify it. Let Herdr itself switch to the originating pane and
+	// raise the host terminal first.
+	if herdrEnvironmentActive() {
+		if script := buildHerdrFocusScript(herdrHostTerminalBundleID(), herdrPaneID(), herdrBinaryPath(), herdrSocketPath()); script != "" {
+			return script
+		}
+	}
+
 	if isIterm2BundleID(bundleID) {
 		return buildIterm2FocusScript(cwd)
 	}
