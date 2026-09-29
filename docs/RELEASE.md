@@ -191,9 +191,37 @@ The CI workflow:
 ### Local build (optional)
 
 ```bash
-make build-notifier                                      # ad-hoc or local cert signing
-cd swift-notifier && bash scripts/build-app.sh --ci      # Developer ID + notarization (needs env vars)
+make build-notifier                                                   # ad-hoc signing
+cd swift-notifier && bash scripts/build-app.sh --ci --skip-notarize   # Developer ID, no notarization
+cd swift-notifier && bash scripts/build-app.sh --ci                   # Developer ID + notarization (needs env vars)
 ```
+
+### Time-sensitive notifications (optional)
+
+`com.apple.developer.usernotifications.time-sensitive` is a **restricted** entitlement, and
+AMFI refuses to launch a process that claims one without a matching provisioning profile
+(`AppleMobileFileIntegrityError -413 "No matching profile found"`). The signed-in entitlement
+alone is therefore never enough — the profile must also be embedded at
+`Contents/embedded.provisionprofile`, and the signature must carry the profile's identity keys.
+
+`build-app.sh` handles all of that. One-time portal setup:
+
+1. **Identifiers** → App ID `com.777genius.agent-notifications` → enable **Time Sensitive Notifications**.
+2. **Profiles** → `+` → Distribution → **Developer ID** → that App ID → your Developer ID Application certificate → Download.
+3. Put the downloaded profile in `swift-notifier/` (or the repo root):
+
+```bash
+mv ~/Downloads/<profile>.provisionprofile swift-notifier/embedded.provisionprofile
+```
+
+In `--ci` mode the profile is then detected automatically and the build reports
+`Provisioning profile: embedded`. It can also be given explicitly via
+`--provisioning-profile <path>` or `PROVISIONING_PROFILE`, or as the CI secret
+`PROVISIONING_PROFILE_BASE64` (base64-encoded `.provisionprofile`).
+
+Without a profile the build still succeeds, but falls back to `entitlements-ci.plist`;
+the `-timeSensitive` flag is then not honored by macOS. The profile is team-scoped
+(it only works with certificates from the same team) and is gitignored.
 
 ## 6. Update release description
 

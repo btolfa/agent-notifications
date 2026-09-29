@@ -34,6 +34,12 @@ bin/ClaudeNotifier.app/
 swift-notifier/.build/
 swift-notifier/ClaudeNotifier.app/
 
+# Team-scoped Developer ID provisioning profile: authorizes the restricted
+# time-sensitive notification entitlement. Per-developer, never shared.
+embedded.provisionprofile
+swift-notifier/embedded.provisionprofile
+swift-notifier/ClaudeNotifier.app.managed-runtime.json
+
 # Root binary (should be in bin/ instead)
 /claude-notifications
 
